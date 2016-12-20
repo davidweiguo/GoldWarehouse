@@ -115,20 +115,6 @@ public abstract class AsyncEventProcessor implements IAsyncEventListener {
 
     protected void onAsyncEvent(AsyncEvent event) {
         try {
-//			Method method = methodMap.get(event.getClass());
-//			if(method == null) {
-//				// if handling method not found try to get outer class handler
-//				String methodName = getMethodName(event.getClass());
-//				try {
-//					method = getHandler().getClass().getMethod(methodName, event.getClass());
-//					methodMap.put(event.getClass(), method);
-//					log.info(methodName + " added in method map");
-//				} catch (NoSuchMethodException e) {
-//					log.error("Event type " + event.getClass() + " handling method is not found " + getHandler() );
-//					return;
-//				}
-//			}
-//			method.invoke(getHandler(), event);
             invokeMethod(event);
         } catch (Exception e) {
             if (e instanceof InvocationTargetException

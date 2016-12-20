@@ -7,7 +7,7 @@
 	http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <context:annotation-config/>
-    <bean id="server" class="com.cyanspring.server.Server"></bean>
+    <bean id="server" class="com.goldwarehouse.server.Server"></bean>
 
     <bean id="systemInfo" class="com.goldwarehouse.common.SystemInfo">
         <property name="env">
@@ -24,5 +24,12 @@
     <bean id="transportService" class="com.goldwarehouse.transport.activemq.ActiveMQObjectService">
         <property name="url" value="nio://localHost:61616?wireFormat.maxInactivityDuration=0"/>
         <property name="memoryLimit" value="268435456"/>
+    </bean>
+
+    <bean id="eventManager" class="com.goldwarehouse.event.RemoteEventManager">
+        <constructor-arg>
+            <ref bean="transportService"/>
+        </constructor-arg>
+        <property name="embedBroker" value="true"/>
     </bean>
 </beans>

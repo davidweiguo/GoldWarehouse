@@ -35,7 +35,6 @@ public class RemoteEventManager extends AsyncEventManager implements IRemoteEven
     }
 
     protected RemoteEventManager() {
-
     }
 
     public RemoteEventManager(IObjectTransportService transport) {
