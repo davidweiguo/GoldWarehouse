@@ -1,4 +1,4 @@
-package com.goldwarehouse.transport.activemq;
+package com.goldwarehouse.transport;
 
 /**
  * Created by David on 2016/12/14.

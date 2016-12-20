@@ -1,5 +1,8 @@
 package com.goldwarehouse.transport.activemq;
 
+import com.goldwarehouse.transport.IMessageListener;
+import com.goldwarehouse.transport.ISender;
+import com.goldwarehouse.transport.ITransportService;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
@@ -31,11 +34,11 @@ public class ActiveMQService implements ITransportService, ExceptionListener {
     protected Connection connection;
     protected Session session;
 
-    protected HashMap<String, MessageConsumer> receivers = new HashMap<String, MessageConsumer>();
-    protected HashMap<String, MessageProducer> senders = new HashMap<String, MessageProducer>();
-    protected HashMap<String, MessageProducer> publishers = new HashMap<String, MessageProducer>();
-    private HashMap<String, ArrayList<IMessageListener>> subscribers = new HashMap<String, ArrayList<IMessageListener>>();
-    private HashMap<IMessageListener, MessageConsumer> consumers = new HashMap<IMessageListener, MessageConsumer>();
+    protected HashMap<String, MessageConsumer> receivers = new HashMap<>();
+    protected HashMap<String, MessageProducer> senders = new HashMap<>();
+    protected HashMap<String, MessageProducer> publishers = new HashMap<>();
+    private HashMap<String, ArrayList<IMessageListener>> subscribers = new HashMap<>();
+    private HashMap<IMessageListener, MessageConsumer> consumers = new HashMap<>();
 
     class MessageListenerAdaptor implements MessageListener {
 
