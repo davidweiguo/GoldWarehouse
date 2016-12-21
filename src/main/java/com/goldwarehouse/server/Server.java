@@ -5,14 +5,18 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.goldwarehouse.common.SystemInfo;
+import com.goldwarehouse.common.event.AsyncTimerEvent;
+import com.goldwarehouse.common.event.ScheduleManager;
 import com.goldwarehouse.common.event.server.ServerReadyEvent;
 import com.goldwarehouse.common.event.system.DuplicateSystemIdEvent;
 import com.goldwarehouse.common.event.system.NodeInfoEvent;
+import com.goldwarehouse.common.event.system.ServerHeartBeatEvent;
 import com.goldwarehouse.common.event.system.ServerShutdownEvent;
 import com.goldwarehouse.event.AsyncEventProcessor;
 import com.goldwarehouse.event.IAsyncEventManager;
 import com.goldwarehouse.event.IRemoteEventManager;
 import com.goldwarehouse.util.IdGenerator;
+import com.goldwarehouse.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +25,17 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.ParseException;
+import java.util.Date;
 
 /**
  * Created by David on 2016/12/20.
  */
 public class Server {
-
     private static final Logger log = LoggerFactory.getLogger(Server.class);
+    private final int HEART_BEAT_INTERVAL = 3000; // 3000 miliseconds
+
+    private String shutdownTime;
     private String inbox;
     private String uid;
     private String channel;
@@ -38,6 +46,13 @@ public class Server {
 
     @Autowired
     private IRemoteEventManager eventManager;
+
+    @Autowired
+    private ScheduleManager scheduleManager;
+
+    private AsyncTimerEvent timerEvent = new AsyncTimerEvent();
+    private ServerHeartBeatEvent heartBeat = new ServerHeartBeatEvent(null, null);
+    private AsyncTimerEvent shutdownEvent = new AsyncTimerEvent();
 
     private AsyncEventProcessor eventProcessor = new AsyncEventProcessor() {
 
@@ -91,6 +106,11 @@ public class Server {
             nodeInfo.setSender(uid);
             eventManager.publishRemoteEvent(nodeInfoChannel, nodeInfo);
             log.info("Published my node info");
+
+            // start heart beat
+            scheduleManager.scheduleRepeatTimerEvent(HEART_BEAT_INTERVAL,
+                    eventProcessor, timerEvent);
+            registerShutdownTime();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -128,7 +148,25 @@ public class Server {
     public void processServerShutdownEvent(ServerShutdownEvent event) {
     }
 
-    public void main(String[] args) {
+    public void processAsyncTimerEvent(AsyncTimerEvent event) throws Exception {
+        if (event == timerEvent) {
+            eventManager.publishRemoteEvent(nodeInfoChannel, heartBeat);
+        } else if (event == shutdownEvent) {
+            log.info("System hits end time, shutting down...");
+            System.exit(0);
+        }
+    }
+
+    private void registerShutdownTime() throws ParseException {
+        if (null == shutdownTime) {
+            return;
+        }
+        Date endTime = TimeUtil.parseTime("HH:mm:ss", shutdownTime);
+        scheduleManager.scheduleTimerEvent(endTime, eventProcessor,
+                shutdownEvent);
+    }
+
+    public static void main(String[] args) {
         String configFile = "conf/server.xml";
         String logConfigFile = "conf/slogback.xml";
 

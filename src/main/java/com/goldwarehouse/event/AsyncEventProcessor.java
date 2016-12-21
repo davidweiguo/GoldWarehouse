@@ -186,7 +186,6 @@ public abstract class AsyncEventProcessor implements IAsyncEventListener {
             public void onEvent(AsyncEvent event) {
                 AsyncEventProcessor.this.onAsyncEvent(event);
             }
-
         };
         thread.start();
     }
