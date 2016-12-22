@@ -28,7 +28,7 @@
         <property name="url" value="nio://localhost:61616?wireFormat.maxInactivityDuration=0"></property>
     </bean>
 
-    <bean id="eventManager" class="com.goldwarehouse.common.event.RemoteEventManager">
+    <bean id="eventManager" class="com.goldwarehouse.event.RemoteEventManager">
         <constructor-arg>
             <ref bean="transportService"/>
         </constructor-arg>

@@ -26,7 +26,7 @@
         <property name="memoryLimit" value="268435456"/>
     </bean>
 
-    <bean id="eventManager" class="com.goldwarehouse.common.event.RemoteEventManager">
+    <bean id="eventManager" class="com.goldwarehouse.event.RemoteEventManager">
         <constructor-arg>
             <ref bean="transportService"/>
         </constructor-arg>

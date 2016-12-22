@@ -1,8 +1,8 @@
 package com.goldwarehouse.transport.activemq;
 
-import com.goldwarehouse.transport.IObjectListener;
-import com.goldwarehouse.transport.IObjectSender;
-import com.goldwarehouse.transport.IObjectTransportService;
+import com.goldwarehouse.common.transport.IObjectListener;
+import com.goldwarehouse.common.transport.IObjectSender;
+import com.goldwarehouse.common.transport.IObjectTransportService;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.slf4j.Logger;

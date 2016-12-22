@@ -1,8 +1,8 @@
 package com.goldwarehouse.transport.activemq;
 
-import com.goldwarehouse.transport.IMessageListener;
-import com.goldwarehouse.transport.ISender;
-import com.goldwarehouse.transport.ITransportService;
+import com.goldwarehouse.common.transport.IMessageListener;
+import com.goldwarehouse.common.transport.ISender;
+import com.goldwarehouse.common.transport.ITransportService;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;

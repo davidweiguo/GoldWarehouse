@@ -11,13 +11,27 @@
 
     <artifactId>server</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+        <hibernate-version>5.0.2.Final</hibernate-version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.goldwarehouse</groupId>
             <artifactId>common</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-version}</version>
+        </dependency>
+        <!-- dbcp -->
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.4</version>
+        </dependency>
     </dependencies>
-
-
 </project>
