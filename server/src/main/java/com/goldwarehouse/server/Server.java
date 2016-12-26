@@ -4,6 +4,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
+import com.goldwarehouse.common.IPlugin;
 import com.goldwarehouse.common.SystemInfo;
 import com.goldwarehouse.common.event.*;
 import com.goldwarehouse.common.event.server.ServerReadyEvent;
@@ -23,6 +24,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by David on 2016/12/20.
@@ -36,6 +40,10 @@ public class Server {
     private String uid;
     private String channel;
     private String nodeInfoChannel;
+    private boolean serverReady;
+
+    private List<IPlugin> plugins;
+    private ReadyList readyList;
 
     @Autowired
     private SystemInfo systemInfo;
@@ -89,6 +97,12 @@ public class Server {
                 eventProcessor.getThread().setName("Server");
             }
 
+            if (null != plugins) {
+                for (IPlugin plugin : plugins) {
+                    plugin.init();
+                }
+            }
+
             // publish my node info
             NodeInfoEvent nodeInfo = new NodeInfoEvent(null, null, true, true,
                     inbox, uid);
@@ -132,8 +146,14 @@ public class Server {
                 eventManager.sendRemoteEvent(myInfo);
                 log.info("Replied my nodeInfo:{}", event.getSender());
             }
-            eventManager.sendRemoteEvent(new ServerReadyEvent(event
-                    .getKey(), event.getSender(), true));
+            if (!event.getServer() && readyList.allUp()) {
+                try {
+                    eventManager.sendRemoteEvent(new ServerReadyEvent(event
+                            .getKey(), event.getSender(), true));
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
         }
     }
 
@@ -159,6 +179,47 @@ public class Server {
         Date endTime = TimeUtil.parseTime("HH:mm:ss", shutdownTime);
         scheduleManager.scheduleTimerEvent(endTime, eventProcessor,
                 shutdownEvent);
+    }
+
+    class ReadyList {
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
+
+        ReadyList(Map<String, Boolean> map) {
+            this.map = map;
+            // map.put("DownStream", false);
+        }
+
+        synchronized void update(String key, boolean value) {
+            if (!map.containsKey(key)) {
+                return;
+            }
+            map.put(key, value);
+            boolean now = allUp();
+            if (!serverReady && now) {
+                serverReady = true;
+                log.info("Server is ready: " + now);
+                ServerReadyEvent event = new ServerReadyEvent(now);
+                eventManager.sendEvent(event);
+                try {
+                    eventManager.publishRemoteEvent(channel, event);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+
+        synchronized boolean isUp(String component) {
+            return map.get(component);
+        }
+
+        synchronized boolean allUp() {
+            for (Map.Entry<String, Boolean> entry : map.entrySet()) {
+                if (!entry.getValue()) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     public static void main(String[] args) {

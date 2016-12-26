@@ -29,117 +29,117 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
 public class HttpService implements IPlugin {
-	private static final Logger log = LoggerFactory.getLogger(HttpService.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpService.class);
 
-	@Autowired
-	private HttpEventHandler httpEventHandler;
+    @Autowired
+    private HttpEventHandler httpEventHandler;
 
-	private final int port;
-	private EventLoopGroup bossGroup;
-	private EventLoopGroup workerGroup;
+    private final int port;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
 
-	public HttpService(int port) {
-		this.port = port;
-	}
+    public HttpService(int port) {
+        this.port = port;
+    }
 
-	@Override
-	public void init() throws Exception {
-		Thread thread = new Thread() {
-			@Override
-			public void run() {
-				try {
-					httpEventHandler.init();
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-				}
-				bossGroup = new NioEventLoopGroup();
-				workerGroup = new NioEventLoopGroup();
-				try {
-					ServerBootstrap bs = new ServerBootstrap();
-					bs.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-							.childHandler(new ChannelInitializer<SocketChannel>() {
+    @Override
+    public void init() throws Exception {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    httpEventHandler.init();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+                bossGroup = new NioEventLoopGroup();
+                workerGroup = new NioEventLoopGroup();
+                try {
+                    ServerBootstrap bs = new ServerBootstrap();
+                    bs.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+                            .childHandler(new ChannelInitializer<SocketChannel>() {
 
-								@Override
-								protected void initChannel(SocketChannel sc) throws Exception {
-									ChannelPipeline cp = sc.pipeline();
-									cp.addLast("decoder", new HttpRequestDecoder());
-									cp.addLast("encoder", new HttpResponseEncoder());
-									cp.addLast("aggregator", new HttpObjectAggregator(1024));
-									cp.addLast("deflater", new HttpContentCompressor());
-									cp.addLast("handler", new HttpServiceHandler());
-								}
+                                @Override
+                                protected void initChannel(SocketChannel sc) throws Exception {
+                                    ChannelPipeline cp = sc.pipeline();
+                                    cp.addLast("decoder", new HttpRequestDecoder());
+                                    cp.addLast("encoder", new HttpResponseEncoder());
+                                    cp.addLast("aggregator", new HttpObjectAggregator(1024));
+                                    cp.addLast("deflater", new HttpContentCompressor());
+                                    cp.addLast("handler", new HttpServiceHandler());
+                                }
 
-							});
-					Channel ch = bs.bind(port).sync().channel();
-					ch.closeFuture().sync();
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-				} finally {
-					bossGroup.shutdownGracefully();
-					workerGroup.shutdownGracefully();
-				}
-			}
-		};
+                            });
+                    Channel ch = bs.bind(port).sync().channel();
+                    ch.closeFuture().sync();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                } finally {
+                    bossGroup.shutdownGracefully();
+                    workerGroup.shutdownGracefully();
+                }
+            }
+        };
 
-		thread.start();
-	}
+        thread.start();
+    }
 
-	@Override
-	public void uninit() {
-		if (bossGroup != null)
-			bossGroup.shutdownGracefully();
-		if (workerGroup != null)
-			workerGroup.shutdownGracefully();
-	}
+    @Override
+    public void uninit() {
+        if (bossGroup != null)
+            bossGroup.shutdownGracefully();
+        if (workerGroup != null)
+            workerGroup.shutdownGracefully();
+    }
 
-	private class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> {
-		private static final String pack = "com.cyanspring.event.http.";
+    private class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> {
+        private static final String pack = "com.goldwarehouse.common.event.http.";
 
-		// Check data correction
-		@Override
-		protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
-			if (msg instanceof HttpRequest && msg instanceof HttpContent) {
-				try {
-					String uri;
-					String clz;
-					String uriData = null;
-					HttpRequest request = (HttpRequest) msg;
-					uri = request.getUri();
-					if (uri.contains("?")) {
-						String[] split = uri.split("\\?");
-						clz = split[0];
-						if (split.length >= 2) 
-							uriData = split[1];
-					} else {
-						clz = uri;
-					}
-					if (clz != null) {
-						clz = clz.substring(1, clz.length());
-						Class<?> c = Class.forName(pack + clz);
-						@SuppressWarnings("unchecked")
-						Constructor<HttpEvent> ctor = (Constructor<HttpEvent>) c.getConstructor();
-						HttpEvent event = ctor.newInstance();
-						ByteBufToBytes reader = new ByteBufToBytes(((HttpContent) msg).content().capacity());
-						reader.reading(((HttpContent) msg).content());
-						event.setRequestData(ctx, uriData, new String(reader.readFull()),
-								httpEventHandler.getBridgeId(), request.getMethod());
-						if (!httpEventHandler.addRequest(event.getId(), event))
-							HttpEventUtil.returnFail(ctx, "");
-					} else {
-						HttpEventUtil.returnFail(ctx, "");
-					}
-				} catch (Exception e) {
-					log.warn(e.getMessage(), e);
-					HttpEventUtil.returnFail(ctx, "");
-				}
-			}
-		}
+        // Check data correction
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+            if (msg instanceof HttpRequest && msg instanceof HttpContent) {
+                try {
+                    String uri;
+                    String clz;
+                    String uriData = null;
+                    HttpRequest request = (HttpRequest) msg;
+                    uri = request.uri();
+                    if (uri.contains("?")) {
+                        String[] split = uri.split("\\?");
+                        clz = split[0];
+                        if (split.length >= 2)
+                            uriData = split[1];
+                    } else {
+                        clz = uri;
+                    }
+                    if (clz != null) {
+                        clz = clz.substring(1, clz.length());
+                        Class<?> c = Class.forName(pack + clz);
+                        @SuppressWarnings("unchecked")
+                        Constructor<HttpEvent> ctor = (Constructor<HttpEvent>) c.getConstructor();
+                        HttpEvent event = ctor.newInstance();
+                        ByteBufToBytes reader = new ByteBufToBytes(((HttpContent) msg).content().capacity());
+                        reader.reading(((HttpContent) msg).content());
+                        event.setRequestData(ctx, uriData, new String(reader.readFull()),
+                                httpEventHandler.getBridgeId(), request.method());
+                        if (!httpEventHandler.addRequest(event.getId(), event))
+                            HttpEventUtil.returnFail(ctx, "");
+                    } else {
+                        HttpEventUtil.returnFail(ctx, "");
+                    }
+                } catch (Exception e) {
+                    log.warn(e.getMessage(), e);
+                    HttpEventUtil.returnFail(ctx, "");
+                }
+            }
+        }
 
-		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-			log.info(cause.getMessage());
-			ctx.channel().close();
-		}
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            log.info(cause.getMessage());
+            ctx.channel().close();
+        }
 
-	}
+    }
 }
