@@ -2,8 +2,10 @@ package com.goldwarehouse.event.http;
 
 import com.goldwarehouse.common.account.UserLoginType;
 import com.goldwarehouse.common.event.AsyncEvent;
+import com.goldwarehouse.common.event.BasicRequestParameter;
 import com.goldwarehouse.common.event.IRemoteEventManager;
 import com.goldwarehouse.common.event.account.UserLoginEvent;
+import com.goldwarehouse.common.event.account.UserLoginReplyEvent;
 import com.goldwarehouse.transport.http.HttpEvent;
 import com.goldwarehouse.transport.tools.HttpEventUtil;
 
@@ -20,7 +22,8 @@ public class Login extends HttpEvent {
             return false;
         }
         Request json = HttpEventUtil.stringToClass(Request.class, content);
-        UserLoginEvent in = new UserLoginEvent(id, null, json.userId, json.pwd, UserLoginType.fromInt(json.type));
+        BasicRequestParameter requestParameter = new BasicRequestParameter(id, null, id);
+        UserLoginEvent in = new UserLoginEvent(requestParameter, json.userId, json.pwd, UserLoginType.fromInt(json.type));
         in.setSender(sender);
         eventManager.sendEvent(in);
         return true;
@@ -32,29 +35,20 @@ public class Login extends HttpEvent {
             if (((UserLoginReplyEvent) event).getTxId().equals(id)) {
                 Response res = new Response();
                 res.ok = ((UserLoginReplyEvent) event).isOk();
-                res.message = ((UserLoginReplyEvent) event).getMessage();
+                res.message = ((UserLoginReplyEvent) event).getMsg();
                 if (!res.ok) {
                     String data = HttpEventUtil.classToString(res) + "\r\n";
                     HttpEventUtil.sendResponse(ctx, data);
                     return true;
                 }
-                res.account = ((UserLoginReplyEvent) event).getUser();
-                res.defaultAccount = ((UserLoginReplyEvent) event).getDefaultAccount();
-                res.accounts = ((UserLoginReplyEvent) event).getAccounts();
-                String accountId = null;
-                if (res.defaultAccount != null) {
-                    accountId = res.defaultAccount.getId();
-                } else {
-                    accountId = res.accounts.get(0).getId();
-                }
-                res.token = CipherUtil.getInstance().encrypt(res.account.getId(), accountId,
-                        String.valueOf(this.created + tokenValid));
-                String data = HttpEventUtil.classToString(res) + "\r\n";
-                HttpEventUtil.sendResponse(ctx, data);
+//                res.token = CipherUtil.getInstance().encrypt(res.account.getId(), accountId,
+//                        String.valueOf(this.created + tokenValid));
+//                String data = HttpEventUtil.classToString(res) + "\r\n";
+//                HttpEventUtil.sendResponse(ctx, data);
             }
             return true;
         } else {
-        return false;
+            return false;
         }
     }
 
