@@ -4,6 +4,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
+import com.goldwarehouse.common.event.BasicRequestParameter;
+import com.goldwarehouse.common.event.account.UserLoginEvent;
 import com.goldwarehouse.common.event.server.ServerReadyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +27,9 @@ public class MyTest extends ClientAdaptor {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-//				HistoricalPriceRequestEvent requestEvent = new HistoricalPriceRequestEvent(event.getKey(), event.getSender(), "01045.HK", "1", 500);
-//				TargetPositionRequestEvent tpEvent = new TargetPositionRequestEvent("key", event.getSender(),
-//						"x112233", "test1-FX", "AUDUSD", -100000, 0.83, false, false);
-                System.out.println(System.currentTimeMillis());
-//				sendEvent(requestEvent);
+                BasicRequestParameter requestParam = new BasicRequestParameter(getId(), null, getId());
+                UserLoginEvent loginEvent = new UserLoginEvent(requestParam, "david", "pwd");
+				sendEvent(loginEvent);
                 try {
                     Thread.sleep(3000000);
                 } catch (InterruptedException e) {

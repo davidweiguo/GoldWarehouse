@@ -41,10 +41,9 @@ public class Login extends HttpEvent {
                     HttpEventUtil.sendResponse(ctx, data);
                     return true;
                 }
-//                res.token = CipherUtil.getInstance().encrypt(res.account.getId(), accountId,
-//                        String.valueOf(this.created + tokenValid));
-//                String data = HttpEventUtil.classToString(res) + "\r\n";
-//                HttpEventUtil.sendResponse(ctx, data);
+                res.token = CipherUtil.getInstance().encrypt(String.valueOf(this.created + tokenValid));
+                String data = HttpEventUtil.classToString(res) + "\r\n";
+                HttpEventUtil.sendResponse(ctx, data);
             }
             return true;
         } else {
