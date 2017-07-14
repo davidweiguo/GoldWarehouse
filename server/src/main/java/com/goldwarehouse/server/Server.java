@@ -23,10 +23,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by David on 2016/12/20.
@@ -44,6 +41,7 @@ public class Server {
 
     private List<IPlugin> plugins;
     private ReadyList readyList;
+    private Map<String, Boolean> readyMap = new HashMap<String, Boolean>();
 
     @Autowired
     private SystemInfo systemInfo;
@@ -97,6 +95,7 @@ public class Server {
                 eventProcessor.getThread().setName("Server");
             }
 
+            readyList = new ReadyList(readyMap);
             if (null != plugins) {
                 for (IPlugin plugin : plugins) {
                     plugin.init();
@@ -213,13 +212,37 @@ public class Server {
         }
 
         synchronized boolean allUp() {
-            for (Map.Entry<String, Boolean> entry : map.entrySet()) {
-                if (!entry.getValue()) {
-                    return false;
-                }
-            }
+//            for (Map.Entry<String, Boolean> entry : map.entrySet()) {
+//                if (!entry.getValue()) {
+//                    return false;
+//                }
+//            }
             return true;
         }
+    }
+
+    public SystemInfo getSystemInfo() {
+        return systemInfo;
+    }
+
+    public void setSystemInfo(SystemInfo systemInfo) {
+        this.systemInfo = systemInfo;
+    }
+
+    public List<IPlugin> getPlugins() {
+        return plugins;
+    }
+
+    public void setPlugins(List<IPlugin> plugins) {
+        this.plugins = plugins;
+    }
+
+    public Map<String, Boolean> getReadyMap() {
+        return readyMap;
+    }
+
+    public void setReadyMap(Map<String, Boolean> readyMap) {
+        this.readyMap = readyMap;
     }
 
     public static void main(String[] args) {

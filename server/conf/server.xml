@@ -10,12 +10,13 @@
     <bean id="server" class="com.goldwarehouse.server.Server">
         <property name="plugins">
             <list>
+                <ref bean="userManager"/>
                 <ref bean="httpService"/>
             </list>
         </property>
         <property name="readyMap">
             <map key-type="java.lang.String" value-type="java.lang.Boolean">
-                <!--<entry key="DownStream" value="false" />-->
+                <entry key="DownStream" value="false"/>
             </map>
         </property>
     </bean>
@@ -33,7 +34,7 @@
     </bean>
 
     <bean id="transportService" class="com.goldwarehouse.transport.activemq.ActiveMQObjectService">
-        <property name="url" value="nio://localHost:61616?wireFormat.maxInactivityDuration=0"/>
+        <property name="url" value="nio://0.0.0.0:61616?wireFormat.maxInactivityDuration=0"/>
         <property name="memoryLimit" value="268435456"/>
     </bean>
 
@@ -42,15 +43,22 @@
             <ref bean="transportService"/>
         </constructor-arg>
         <property name="embedBroker" value="true"/>
+        <property name="bridges">
+            <list>
+                <ref bean="httpEventHandler"/>
+            </list>
+        </property>
     </bean>
 
-    <bean id="httpService" class="com.cyanspring.transport.http.HttpService">
+    <bean id="userManager" class="com.goldwarehouse.server.UserManager"/>
+
+    <bean id="httpService" class="com.goldwarehouse.transport.http.HttpService">
         <constructor-arg>
             <value>54321</value>
         </constructor-arg>
     </bean>
 
-    <bean id="httpEventHandler" class="com.cyanspring.transport.http.HttpEventHandler">
+    <bean id="httpEventHandler" class="com.goldwarehouse.transport.http.HttpEventHandler">
         <property name="eventManager" ref="eventManager"></property>
         <property name="timeout" value="30"></property>
     </bean>

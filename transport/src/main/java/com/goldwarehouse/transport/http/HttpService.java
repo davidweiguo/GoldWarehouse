@@ -93,7 +93,7 @@ public class HttpService implements IPlugin {
     }
 
     private class HttpServiceHandler extends SimpleChannelInboundHandler<HttpObject> {
-        private static final String pack = "com.goldwarehouse.common.event.http.";
+        private static final String pack = "com.goldwarehouse.event.http.";
 
         // Check data correction
         @Override

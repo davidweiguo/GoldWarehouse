@@ -68,7 +68,7 @@ public abstract class ClientAdaptor {
         this.nodeChannel = systemInfo.getEnv() + "." + systemInfo.getCategory() + "." + "node";
         InetAddress addr = InetAddress.getLocalHost();
         String hostName = addr.getHostName();
-        String userName = System.getProperty("user.name");
+        String userName = System.getProperty("account.name");
         userName = userName == null ? "" : userName;
         this.inbox = hostName + "." + userName + "." + IdGenerator.getInstance().getNextID();
 
