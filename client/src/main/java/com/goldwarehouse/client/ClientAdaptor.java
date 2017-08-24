@@ -85,7 +85,6 @@ public abstract class ClientAdaptor {
             }
             ok = true;
         }
-        eventManager.addEventChannel(this.channel);
         eventManager.addEventChannel(this.nodeChannel);
 
         eventProcessor.setHandler(this);
