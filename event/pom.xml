@@ -14,12 +14,12 @@
         <dependency>
             <groupId>com.goldwarehouse</groupId>
             <artifactId>common</artifactId>
-            <version>1.0</version>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.goldwarehouse</groupId>
             <artifactId>transport</artifactId>
-            <version>1.0</version>
+            <version>${parent.version}</version>
         </dependency>
     </dependencies>
 </project>
