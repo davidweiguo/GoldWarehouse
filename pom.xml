@@ -36,6 +36,7 @@
         <module>client</module>
         <module>event</module>
         <module>demo</module>
+        <module>springboot</module>
     </modules>
     <packaging>pom</packaging>
 
