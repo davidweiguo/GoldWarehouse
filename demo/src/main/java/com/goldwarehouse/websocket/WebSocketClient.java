@@ -14,7 +14,7 @@ public class WebSocketClient {
 
     private static final String URI_STR = "ws://localhost/websocket/davidguo";
 
-    private static Session session;
+    private Session session;
 
     @OnOpen
     public void onOpen(Session session) {
