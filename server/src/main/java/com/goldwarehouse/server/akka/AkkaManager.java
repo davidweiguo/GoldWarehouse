@@ -1,9 +1,6 @@
 package com.goldwarehouse.server.akka;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.dispatch.OnComplete;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -84,7 +81,14 @@ public class AkkaManager {
                     ActorRef echoActor = system.actorOf(Props.create(EchoActor.class), echoName + suffix);
                     echoActor.tell(echo, ActorRef.noSender());
                 } else {
-                    success.tell(echo, ActorRef.noSender());
+                    if (echo.getNum() == 90) {
+                        // 停掉一个 Actor
+                        success.tell(PoisonPill.getInstance(), ActorRef.noSender());
+                        // 通过 Kill 来杀死 Actor 时，会抛出ActorKilledException异常，该异常会被父级Supervisor处理，默认方式就是停止该Actor
+                        // success.tell(Kill.getInstance(), ActorRef.noSender());
+                    } else {
+                        success.tell(echo, ActorRef.noSender());
+                    }
                 }
             }
         }, system.dispatcher());
@@ -107,4 +111,6 @@ public class AkkaManager {
         }, system.dispatcher());
         System.out.println("finished");
     }
+
+
 }
